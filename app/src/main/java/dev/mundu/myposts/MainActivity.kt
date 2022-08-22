@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import dev.mundu.myposts.databinding.ActivityMainBinding
+import dev.mundu.myposts.databinding.PostsListItemBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -19,32 +20,34 @@ class MainActivity : AppCompatActivity() {
         fetchPosts()
     }
     fun fetchPosts() {
-        val retrofit = ApiClient.buildApiClient(ApiInterface::class.java)
-        val request = retrofit.getPosts()
-
-        //ceate a callback function to wait for request to be sent and response received
-        request.enqueue(object: Callback<List<Post>> {
-            override fun onResponse(call: Call<List<Post>>, response:
-            Response<List<Post>>
-            ) {
-                //if response is succesful will notify a user that its successful and gives back response
-                if (response.isSuccessful){
+        var apiclient = ApiClient.buildApiClient(ApiInterface::class.java)
+        var request = apiclient.getPosts()
+        request.enqueue(object : Callback<List<Post>> {
+            override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
+                if (response.isSuccessful) {
                     var posts = response.body()
+                    if (posts != null) {
+                        display(posts)
 
-                    Toast.makeText(baseContext, "fetched ${posts!!.size} posts", Toast.
-                    LENGTH_LONG).show()
-                    var getPost7 = PostAdapter(baseContext, posts)
-                    Log.d("Tag",posts.toString())
-                    binding.rvPosts.adapter = getPost7
-                    binding.rvPosts.layoutManager = LinearLayoutManager(baseContext)
+                    }
+
                 }
             }
-            //id response is an error it will bring back error message and notify user.
+
             override fun onFailure(call: Call<List<Post>>, t: Throwable) {
+                Toast.makeText(baseContext, t.message, Toast.LENGTH_LONG).show()
 
             }
+
         })
     }
 
+    fun display(postslist: List<Post>) {
+        binding.rvPosts.layoutManager = LinearLayoutManager(this)
+        var postAdapter = PostAdapter(postslist)
+        binding.rvPosts.adapter = postAdapter
+
+
+    }
 
 }
